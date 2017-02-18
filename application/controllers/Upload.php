@@ -1,6 +1,7 @@
 <?php
-class Upload extends CI_Controller {
-
+ini_set('memory_limit', '-1');
+class Upload extends CI_Controller
+{
 	public function __construct()
 	{
 		parent::__construct();
@@ -22,6 +23,8 @@ class Upload extends CI_Controller {
 		$color = $this->input->post('color');
 		$watermark = $this->input->post('watermark');
 		$watermark_percentage = $this->input->post('watermark_percentage');
+		$text = $this->input->post('text');
+		$text_footer = 'Selama persediaan masih ada ';
 
 		if (isset($_FILES['userfile']['name']))
 		{
@@ -64,6 +67,9 @@ class Upload extends CI_Controller {
 					if ($watermark == 1)
 						$upload_data = $this->do_watermark($upload_data, $watermark_percentage);
 
+					if ($text)
+						$upload_data = $this->do_watermark_text($upload_data, $text, $text_footer);
+
 					$data['message'][] = $_FILES['file']['name'].', success';
 				}
 			}
@@ -79,7 +85,7 @@ class Upload extends CI_Controller {
 		$imgSrcPathFinal = $data['full_path']; // absolute path of source image or relative path to source directory with image name.
 		$imgDestPath = $data['file_path'];  // relative path to destination directory.
 		$imgName = $data['file_name']; // image name
-		$types 				= array(1 => 'gif', 2 => 'jpg', 3 => 'png', 4 => 'swf', 5 => 'psd', 6 => 'bmp', 7 => 'tiff', 8 => 'tiff', 9 => 'jpc', 10 => 'jp2', 11 => 'jpx', 12 => 'jb2', 13 => 'swc', 14 => 'iff', 15 => 'wbmp', 16 => 'xbm');
+		$types 			= array(1 => 'gif', 2 => 'jpg', 3 => 'png', 4 => 'swf', 5 => 'psd', 6 => 'bmp', 7 => 'tiff', 8 => 'tiff', 9 => 'jpc', 10 => 'jp2', 11 => 'jpx', 12 => 'jb2', 13 => 'swc', 14 => 'iff', 15 => 'wbmp', 16 => 'xbm');
 		list($width, $height, $type, $attr) = getimagesize($imgSrcPathFinal);
 		$fileExtension = $types[$type];
 		if ($fileExtension == "jpg")
@@ -204,31 +210,9 @@ class Upload extends CI_Controller {
 		// get max height / width to make 1 : 1
 		$max_height_width = max($data['image_height'], $data['image_width']);
 
-		// $config['image_library'] = 'gd2';
-		// $config['maintain_ratio'] = false;
-		//
-		// if ($new_image === true)
-		// 	$config['new_image'] = './uploads/new_' . $data['file_name'];
-		//
-		// $config['source_image'] = $full_path;
-		//
-		// // set cropping for y or x axis, depending on image orientation
-	    // $config['width'] = $max_height_width;
-	    // $config['height'] = $max_height_width;
-		// $config['x_axis'] = (($data['image_width'] / 2) - ($config['width'] / 2));
-		// $config['y_axis'] = (($data['image_height'] / 2) - ($config['height'] / 2));
-		//
-		// $this->image_lib->clear();
-		// $this->image_lib->initialize($config);
-		//
-		// if ( ! $this->image_lib->crop())
-		//     pr($this->image_lib->display_errors());
-		//
-		// return $this->upload->data();
-
 		$border_width = 0;
 		if ($border == TRUE)
-			$border_width = ($max_height_width / 20);
+			$border_width = ($max_height_width / 15);
 
 		$this->image_moo->load($full_path)
 			// ->set_background_colour("#000000")
@@ -273,5 +257,29 @@ class Upload extends CI_Controller {
 		return $data;
 	}
 
+	public function do_watermark_text($data, $text, $text_footer)
+	{
+		// pr($data);
+
+		$full_path = $data['full_path'];
+
+		// get max height / width to make 1 : 1
+		$max_height_width = max($data['image_height'], $data['image_width']);
+
+		// seet font size
+		$font_size = ($max_height_width / 25);
+
+		$this->image_moo->load($full_path)
+			->make_watermark_text($text, "uploads/fonts/arial.ttf", $font_size, "#FFFFFF")
+			->watermark(8)
+			->save($full_path, TRUE);
+
+		$this->image_moo->load($full_path)
+			->make_watermark_text($text_footer, "uploads/fonts/arial.ttf", $font_size, "#FFFFFF")
+			->watermark(2)
+			->save($full_path, TRUE);
+
+		return $data;
+	}
 }
 ?>
