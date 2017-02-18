@@ -272,15 +272,18 @@ class Upload extends CI_Controller
 		$logo_path = './uploads/logo/watermark_text.jpg';
 		$logo_path_resize = './uploads/logo/watermark_text_resize.png';
 		$this->image_moo->load($logo_path)
-			->resize($min_height_width, NULL)
+			->resize($max_height_width / 2, NULL)
 			->save($logo_path_resize, TRUE);
 
+		$config['wm_hor_alignment'] = 'left';
 		$config['source_image'] = $full_path;
 		$config['wm_opacity'] = '100';
         $config['wm_overlay_path'] = './uploads/logo/watermark_text_resize.png';
 		$config['wm_type'] = 'overlay';
-		$config['wm_vrt_alignment'] = 'bottom';
-        $this->image_lib->initialize($config);
+		$config['wm_vrt_alignment'] = 'top';
+		$config['wm_x_transp'] = '1';
+		$config['wm_y_transp'] = '1';
+		$this->image_lib->initialize($config);
         $this->image_lib->watermark();
 
 		return $data;
