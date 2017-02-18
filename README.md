@@ -7,3 +7,4 @@ Extract and don't forget to activate extension php_fileinfo.dll
 
 ## Usage
 upload logo in uploads/ and filename should be logo.png
+upload watermark txt in uploads/ and filename should be watermark_text.png

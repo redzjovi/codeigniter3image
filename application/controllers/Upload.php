@@ -6,6 +6,7 @@ class Upload extends CI_Controller
 	{
 		parent::__construct();
 		$this->load->helper(array('form', 'url'));
+		$this->load->library('image_moo');
 	}
 
 	public function index()
@@ -23,8 +24,7 @@ class Upload extends CI_Controller
 		$color = $this->input->post('color');
 		$watermark = $this->input->post('watermark');
 		$watermark_percentage = $this->input->post('watermark_percentage');
-		$text = $this->input->post('text');
-		$text_footer = 'Selama persediaan masih ada ';
+		$watermark_text = $this->input->post('watermark_text');
 
 		if (isset($_FILES['userfile']['name']))
 		{
@@ -58,17 +58,19 @@ class Upload extends CI_Controller
 					if ($remove_whitespace == 1)
 						$upload_data = $this->do_remove_whitespace($upload_data);
 
+					$upload_data = $this->do_square($upload_data); // square without border
+
+					if ($watermark == 1)
+						$upload_data = $this->do_watermark($upload_data, $watermark_percentage);
+
+					if ($watermark_text == 1)
+						$upload_data = $this->do_watermark_text($upload_data);
+
 					$upload_data = $this->do_square(
 						$upload_data,
 						($border == 1 ? TRUE : FALSE),
 						$color
 					);
-
-					if ($watermark == 1)
-						$upload_data = $this->do_watermark($upload_data, $watermark_percentage);
-
-					if ($text)
-						$upload_data = $this->do_watermark_text($upload_data, $text, $text_footer);
 
 					$data['message'][] = $_FILES['file']['name'].', success';
 				}
@@ -257,26 +259,26 @@ class Upload extends CI_Controller
 		return $data;
 	}
 
-	public function do_watermark_text($data, $text, $text_footer)
+	public function do_watermark_text($data)
 	{
 		// pr($data);
 
 		$full_path = $data['full_path'];
 
-		// get max height / width to make 1 : 1
+		// get min, max height / width to make 1 : 1
+		$min_height_width = min($data['image_height'], $data['image_width']);
 		$max_height_width = max($data['image_height'], $data['image_width']);
 
-		// seet font size
-		$font_size = ($max_height_width / 25);
+		$logo_path = './uploads/logo/watermark_text.jpg';
+		$logo_path_resize = './uploads/logo/watermark_text_resize.png';
+		$this->image_moo->load($logo_path)
+			->resize($max_height_width, $min_height_width, TRUE)
+			->save($logo_path_resize, TRUE);
 
 		$this->image_moo->load($full_path)
-			->make_watermark_text($text, "uploads/fonts/arial.ttf", $font_size, "#FFFFFF")
+			->load_watermark($logo_path_resize, 1, 1)
+			->set_watermark_transparency(100)
 			->watermark(8)
-			->save($full_path, TRUE);
-
-		$this->image_moo->load($full_path)
-			->make_watermark_text($text_footer, "uploads/fonts/arial.ttf", $font_size, "#FFFFFF")
-			->watermark(2)
 			->save($full_path, TRUE);
 
 		return $data;

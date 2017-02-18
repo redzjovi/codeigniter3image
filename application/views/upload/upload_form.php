@@ -14,7 +14,7 @@
 
         <input <?php echo set_checkbox('watermark', 1, TRUE) ?> name="watermark" type="checkbox" value="1" />Watermark
         <input <?php echo set_value('watermark_percentage') ?> name="watermark_percentage" type="number" value="50" />%<br />
-        Text<input name="text" type="text" value="Free sample Amino " /><br />
+        <input <?php echo set_checkbox('watermark', 1, TRUE) ?> name="watermark_text" type="checkbox" value="1" />Watermark Text<br />
 
         <input multiple required type="file" name="userfile[]" size="20" />
 
