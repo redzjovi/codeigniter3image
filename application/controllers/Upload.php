@@ -272,7 +272,7 @@ class Upload extends CI_Controller
 		$logo_path = './uploads/logo/watermark_text.jpg';
 		$logo_path_resize = './uploads/logo/watermark_text_resize.png';
 		$this->image_moo->load($logo_path)
-			->resize($max_height_width / 2, NULL)
+			->resize($max_height_width * 2 / 3, NULL)
 			->save($logo_path_resize, TRUE);
 
 		$config['wm_hor_alignment'] = 'left';
